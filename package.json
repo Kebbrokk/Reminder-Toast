@@ -1,0 +1,33 @@
+{
+  "name": "reminder-toast",
+  "version": "2.0.0",
+  "description": "Obsidian plugin: reminders with customizable toast notifications and a calendar.",
+  "main": "main.js",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+    "lint": "eslint main.ts src"
+  },
+  "keywords": [
+    "obsidian",
+    "reminder",
+    "tasks",
+    "notification"
+  ],
+  "author": "Kebb",
+  "license": "MIT",
+  "devDependencies": {
+    "@codemirror/state": "6.5.0",
+    "@codemirror/view": "6.38.6",
+    "@eslint/js": "9.39.5",
+    "@types/node": "^20.11.0",
+    "esbuild": "^0.20.0",
+    "eslint": "9.39.5",
+    "eslint-plugin-obsidianmd": "0.4.2",
+    "moment": "2.29.4",
+    "obsidian": "latest",
+    "tslib": "^2.6.2",
+    "typescript": "^5.3.3",
+    "typescript-eslint": "8.71.0"
+  }
+}

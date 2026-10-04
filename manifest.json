@@ -1,0 +1,10 @@
+{
+  "id": "reminder-toast",
+  "name": "Reminder Toast",
+  "version": "2.0.0",
+  "minAppVersion": "1.13.0",
+  "description": "Create reminders with dates, times and repeats, and get customizable toast notifications when they come due. Includes a calendar for the sidebar and notes.",
+  "author": "Kebb",
+  "authorUrl": "https://github.com/kebbrokk",
+  "isDesktopOnly": true
+}

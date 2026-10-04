@@ -1,0 +1,981 @@
+/* ---------- Toasts ---------- */
+
+.rt-toast-container {
+  position: fixed;
+  z-index: var(--layer-notice, 60);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(360px, calc(100vw - 32px));
+  pointer-events: none;
+}
+
+.rt-pos-top-right { top: 48px; right: 16px; }
+.rt-pos-top-left { top: 48px; left: 16px; }
+.rt-pos-top-center { top: 48px; left: 50%; transform: translateX(-50%); }
+.rt-pos-bottom-right { bottom: 40px; right: 16px; flex-direction: column-reverse; }
+.rt-pos-bottom-left { bottom: 40px; left: 16px; flex-direction: column-reverse; }
+.rt-pos-bottom-center { bottom: 40px; left: 50%; transform: translateX(-50%); flex-direction: column-reverse; }
+
+.rt-toast {
+  --rt-accent: var(--interactive-accent);
+  pointer-events: auto;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  border: 1px solid var(--background-modifier-border);
+  border-left: 4px solid var(--rt-accent);
+  border-radius: var(--radius-m, 8px);
+  box-shadow: var(--shadow-l, 0 8px 24px rgba(0, 0, 0, 0.25));
+  padding: 12px 14px;
+  animation: rt-slide-in 220ms ease-out;
+}
+
+.rt-toast-leaving {
+  animation: rt-fade-out 200ms ease-in forwards;
+}
+
+.rt-toast-flash {
+  animation: rt-slide-in 220ms ease-out, rt-flash 1.1s ease-in-out 220ms infinite;
+}
+
+@keyframes rt-slide-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes rt-fade-out {
+  to { opacity: 0; transform: scale(0.97); }
+}
+
+@keyframes rt-flash {
+  0%, 100% {
+    box-shadow: var(--shadow-l, 0 8px 24px rgba(0, 0, 0, 0.25)), 0 0 0 0 var(--rt-accent);
+  }
+  50% {
+    box-shadow: var(--shadow-l, 0 8px 24px rgba(0, 0, 0, 0.25)), 0 0 0 5px var(--rt-accent);
+    background: color-mix(in srgb, var(--rt-accent) 14%, var(--background-primary));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rt-toast,
+  .rt-toast-flash { animation: none; }
+  .rt-toast-flash { box-shadow: 0 0 0 3px var(--rt-accent); }
+}
+
+.rt-toast-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rt-toast-icon {
+  color: var(--rt-accent);
+  display: flex;
+}
+
+.rt-toast-title {
+  flex: 1;
+  font-weight: var(--font-semibold, 600);
+  font-size: var(--font-ui-medium);
+  word-break: break-word;
+}
+
+.rt-toast-close {
+  padding: 2px;
+  height: auto;
+}
+
+.rt-toast-body {
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  word-break: break-word;
+}
+
+.rt-toast-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+  justify-content: flex-end;
+}
+
+.rt-toast-actions button {
+  font-size: var(--font-ui-smaller);
+  padding: 4px 10px;
+  height: auto;
+}
+
+/* ---------- Modal ---------- */
+
+.rt-modal .rt-wide-input { width: 100%; min-width: 220px; }
+
+.rt-date-input,
+.rt-time-input { margin-left: 6px; }
+
+.rt-quick-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 12px;
+}
+
+.rt-chip {
+  font-size: var(--font-ui-smaller);
+  padding: 3px 10px;
+  height: auto;
+  border-radius: 999px;
+}
+
+.rt-small-btn {
+  font-size: var(--font-ui-smaller);
+  padding: 3px 8px;
+  height: auto;
+  margin-left: 6px;
+}
+
+.rt-toast-custom {
+  margin: 8px 0;
+  padding: 8px 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s, 6px);
+}
+
+.rt-toast-custom summary {
+  cursor: pointer;
+  font-weight: var(--font-semibold, 600);
+}
+
+.rt-placeholder-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.rt-placeholder { cursor: help; font-size: var(--font-ui-smaller); }
+
+.rt-preview { margin: 12px 0 4px; }
+
+.rt-preview-label {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.rt-toast-static { animation: none; box-shadow: none; }
+
+/* ---------- Settings ---------- */
+
+.rt-settings-help ul { margin: 4px 0 12px; padding-left: 20px; }
+
+/* ---------- Sidebar list ---------- */
+
+.rt-list-view { padding: 8px 12px; }
+
+.rt-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.rt-list-title { font-weight: var(--font-semibold, 600); font-size: var(--font-ui-medium); }
+
+.rt-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: var(--font-ui-small);
+  padding: 4px 10px;
+  height: auto;
+}
+
+.rt-add-btn span { display: flex; }
+
+.rt-empty { color: var(--text-muted); text-align: center; margin-top: 24px; }
+
+.rt-section { margin-bottom: 12px; }
+
+.rt-section-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-size: var(--font-ui-small);
+  font-weight: var(--font-semibold, 600);
+  color: var(--text-muted);
+  padding: 4px 0;
+  user-select: none;
+}
+
+.rt-section-overdue .rt-section-head { color: var(--text-accent); }
+
+.rt-caret { display: flex; }
+
+.rt-clear-btn { margin-left: auto; }
+
+.rt-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px;
+  border-radius: var(--radius-s, 6px);
+}
+
+.rt-item:hover { background: var(--background-modifier-hover); }
+
+.rt-item.is-due { border-left: 3px solid var(--interactive-accent); }
+
+.rt-item.is-completed .rt-item-title {
+  text-decoration: line-through;
+  color: var(--text-faint);
+}
+
+.rt-check { margin-top: 3px; }
+
+.rt-item-main { flex: 1; min-width: 0; }
+
+.rt-item-title { font-weight: var(--font-medium, 500); word-break: break-word; }
+
+.rt-item-meta,
+.rt-item-msg,
+.rt-item-note { font-size: var(--font-ui-smaller); color: var(--text-muted); }
+
+.rt-item-msg { white-space: pre-wrap; margin-top: 2px; }
+
+.rt-item-note { display: inline-block; margin-top: 2px; }
+
+.rt-item-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 120ms;
+}
+
+.rt-item:hover .rt-item-actions,
+.rt-item:focus-within .rt-item-actions { opacity: 1; }
+
+/* Touch devices have no hover, so always show actions. */
+.is-mobile .rt-item-actions { opacity: 1; }
+
+.rt-status { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+.rt-status-icon { display: flex; }
+.rt-status-icon svg { width: 14px; height: 14px; }
+
+/* ---------- Inline reminders and reminders file ---------- */
+
+.rt-inline-badge {
+  display: inline-flex;
+  vertical-align: -2px;
+  margin-right: 4px;
+  color: var(--text-faint);
+}
+
+.rt-inline-badge svg { width: 14px; height: 14px; }
+
+.rt-path-input { min-width: 220px; }
+
+.rt-settings-help pre {
+  margin: 6px 0;
+  padding: 8px 10px;
+  border-radius: var(--radius-s, 6px);
+  background: var(--background-secondary);
+  white-space: pre-wrap;
+}
+
+/* ---------- Colors in the list ---------- */
+
+.rt-item.has-color { box-shadow: inset 3px 0 0 var(--rt-item); }
+.rt-item.has-color.is-due { border-left: none; }
+
+.rt-item-repeat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+}
+
+.rt-item-repeat-icon { display: flex; }
+.rt-item-repeat-icon svg { width: 12px; height: 12px; }
+
+.rt-item-tags,
+.rt-cal-item-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+
+.rt-cal-tag {
+  font-size: var(--font-ui-smaller);
+  color: var(--tag-color, var(--text-accent));
+  background: var(--tag-background, var(--background-modifier-hover));
+  border-radius: 999px;
+  padding: 0 6px;
+}
+
+/* ---------- Dialog: repeat, color, tags ---------- */
+
+.rt-repeat-details {
+  margin: -6px 0 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-s, 6px);
+  background: var(--background-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rt-repeat-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.rt-repeat-interval { width: 64px; }
+.rt-repeat-end { display: flex; align-items: center; gap: 4px; }
+
+.rt-weekday-row { display: flex; gap: 4px; flex-wrap: wrap; }
+
+.rt-weekday {
+  width: 34px;
+  height: 30px;
+  padding: 0;
+  font-size: var(--font-ui-smaller);
+}
+
+.rt-weekday.is-active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.rt-swatches { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: flex-end; }
+
+.rt-swatch {
+  --rt-swatch: var(--interactive-accent);
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--rt-swatch);
+  border: 2px solid transparent;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.rt-swatch.is-active { outline: 2px solid var(--text-normal); outline-offset: 2px; }
+
+.rt-swatch-auto {
+  background: transparent;
+  border: 2px dashed var(--rt-swatch);
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.rt-swatch-custom {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.rt-swatch-custom.is-active { outline: 2px solid var(--text-normal); outline-offset: 1px; border-radius: 4px; }
+
+.rt-tag-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: -6px 0 12px; }
+
+.rt-tag-chip {
+  --rt-tag: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  padding: 2px 10px;
+  height: auto;
+  border-radius: 999px;
+  border: 1px solid var(--rt-tag);
+  background: transparent;
+  color: var(--text-normal);
+  box-shadow: none;
+}
+
+.rt-tag-chip.is-active {
+  background: var(--rt-tag);
+  color: #fff;
+}
+
+/* ---------- Settings: tags ---------- */
+
+.rt-tag-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+  background: var(--rt-tag);
+}
+
+/* ---------- Calendar ---------- */
+
+.rt-cal-view { padding: 8px 10px; }
+
+.rt-cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.rt-cal-nav,
+.rt-cal-actions { display: flex; align-items: center; gap: 2px; }
+
+.rt-cal-title {
+  font-weight: var(--font-semibold, 600);
+  font-size: var(--font-ui-medium);
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 2px 6px;
+  height: auto;
+}
+
+.rt-cal-icon-btn.is-active { color: var(--interactive-accent); }
+
+.rt-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+}
+
+.rt-cal-weekday {
+  text-align: center;
+  font-size: var(--font-ui-smaller);
+  color: var(--text-faint);
+  padding: 2px 0 4px;
+  text-transform: uppercase;
+}
+
+.rt-cal-day {
+  min-height: 44px;
+  padding: 3px 2px;
+  border-radius: var(--radius-s, 6px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.rt-cal-day:hover { background: var(--background-modifier-hover); }
+.rt-cal-day.is-weekend .rt-cal-num { color: var(--text-muted); }
+.rt-cal-day.is-other-month { opacity: 0.45; }
+.rt-cal-day.is-selected { background: var(--background-modifier-active-hover, var(--background-modifier-hover)); }
+.rt-cal-day.has-due .rt-cal-num { font-weight: 700; }
+
+.rt-cal-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-ui-small);
+}
+
+/* Current date */
+.rt-cal-day.is-today .rt-cal-num {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  font-weight: 700;
+}
+
+.rt-cal-day.is-today { box-shadow: inset 0 0 0 1px var(--interactive-accent); }
+
+.rt-cal-dots { display: flex; gap: 2px; align-items: center; flex-wrap: wrap; justify-content: center; }
+
+.rt-cal-dot {
+  --rt-dot: var(--interactive-accent);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--rt-dot);
+}
+
+.rt-cal-dot.is-completed { background: transparent; box-shadow: inset 0 0 0 1px var(--rt-dot); }
+
+.rt-cal-more { font-size: 9px; color: var(--text-faint); line-height: 1; }
+
+.rt-cal-agenda { margin-top: 12px; border-top: 1px solid var(--background-modifier-border); padding-top: 8px; }
+
+.rt-cal-agenda-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: var(--font-semibold, 600);
+  font-size: var(--font-ui-small);
+  margin-bottom: 6px;
+}
+
+.rt-cal-today-badge {
+  font-size: var(--font-ui-smaller);
+  font-weight: 600;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.rt-cal-empty { color: var(--text-faint); font-size: var(--font-ui-smaller); }
+
+.rt-cal-item {
+  --rt-item: var(--interactive-accent);
+  display: flex;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--radius-s, 6px);
+  box-shadow: inset 3px 0 0 var(--rt-item);
+  background: color-mix(in srgb, var(--rt-item) 8%, transparent);
+  margin-bottom: 4px;
+  cursor: pointer;
+}
+
+.rt-cal-item:hover { background: color-mix(in srgb, var(--rt-item) 16%, transparent); }
+.rt-cal-item.is-completed .rt-cal-item-title { text-decoration: line-through; color: var(--text-faint); }
+.rt-cal-item.is-projected { opacity: 0.8; }
+
+.rt-cal-item-time {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  min-width: 56px;
+  padding-top: 1px;
+  font-variant-numeric: tabular-nums;
+}
+
+.rt-cal-item-main { flex: 1; min-width: 0; }
+
+.rt-cal-item-title { font-size: var(--font-ui-small); word-break: break-word; }
+
+.rt-cal-item-icon { display: inline-flex; vertical-align: -2px; margin-right: 4px; color: var(--text-muted); }
+.rt-cal-item-icon svg { width: 12px; height: 12px; }
+
+/* ---------- Beat Obsidian's default button styling ----------
+   Obsidian styles button:not(.clickable-icon) with a gray background and shadow,
+   which is more specific than plain class selectors. These rules restore our colors. */
+
+.rt-modal button.rt-swatch:not(.clickable-icon),
+.rt-modal button.rt-swatch:not(.clickable-icon):hover {
+  background-color: var(--rt-swatch);
+  border: 2px solid transparent;
+  box-shadow: none;
+  padding: 0;
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+}
+
+.rt-modal button.rt-swatch:not(.clickable-icon):hover { transform: scale(1.12); }
+
+.rt-modal button.rt-swatch.rt-swatch-auto:not(.clickable-icon),
+.rt-modal button.rt-swatch.rt-swatch-auto:not(.clickable-icon):hover {
+  background-color: transparent;
+  border: 2px dashed var(--rt-swatch);
+  color: var(--text-muted);
+}
+
+.rt-modal button.rt-swatch.is-active:not(.clickable-icon) {
+  outline: 2px solid var(--text-normal);
+  outline-offset: 2px;
+}
+
+.rt-modal input.rt-swatch-custom {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+}
+
+.rt-modal .rt-swatches { gap: 8px; }
+
+.rt-modal button.rt-tag-chip:not(.clickable-icon) {
+  background-color: transparent;
+  border: 1px solid var(--rt-tag);
+  box-shadow: none;
+  color: var(--text-normal);
+  height: auto;
+  padding: 2px 10px;
+}
+
+.rt-modal button.rt-tag-chip:not(.clickable-icon):hover {
+  background-color: color-mix(in srgb, var(--rt-tag) 20%, transparent);
+}
+
+.rt-modal button.rt-tag-chip.is-active:not(.clickable-icon),
+.rt-modal button.rt-tag-chip.is-active:not(.clickable-icon):hover {
+  background-color: var(--rt-tag);
+  color: #fff;
+}
+
+.rt-modal button.rt-weekday.is-active:not(.clickable-icon),
+.rt-modal button.rt-weekday.is-active:not(.clickable-icon):hover {
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.rt-cal-view button.rt-cal-title:not(.clickable-icon) {
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.rt-cal-view button.rt-cal-title:not(.clickable-icon):hover {
+  background-color: var(--background-modifier-hover);
+}
+
+/* Color row gets its own full-width line so the swatches don't wrap. */
+.rt-modal .rt-color-setting { flex-wrap: wrap; }
+.rt-modal .rt-color-setting .setting-item-info { flex: 1 1 100%; margin-right: 0; }
+.rt-modal .rt-color-setting .setting-item-control { flex: 1 1 100%; justify-content: flex-start; margin-top: 8px; }
+.rt-modal .rt-color-setting .rt-swatches { justify-content: flex-start; flex-wrap: wrap; }
+
+/* Round custom color picker to match the swatches. */
+.rt-modal input.rt-swatch-custom { border-radius: 50%; overflow: hidden; cursor: pointer; }
+.rt-modal input.rt-swatch-custom::-webkit-color-swatch-wrapper { padding: 0; }
+.rt-modal input.rt-swatch-custom::-webkit-color-swatch { border: none; border-radius: 50%; }
+.rt-modal input.rt-swatch-custom::-moz-color-swatch { border: none; border-radius: 50%; }
+.rt-modal input.rt-swatch-custom.is-active { outline: 2px solid var(--text-normal); outline-offset: 2px; }
+
+/* Rainbow ring marks the custom picker as "pick any color". */
+.rt-modal input.rt-swatch-custom {
+  box-sizing: border-box;
+  padding: 3px;
+  background: conic-gradient(#e5484d, #e2a336, #46a758, #12a594, #0090ff, #8e4ec6, #d6409f, #e5484d);
+}
+
+/* ---------- Lead-up notifications ---------- */
+
+.rt-lead-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.rt-lead-none { color: var(--text-faint); font-size: var(--font-ui-smaller); }
+.rt-lead-presets { display: flex; flex-wrap: wrap; gap: 6px; }
+.rt-lead-num { width: 64px; }
+
+.rt-modal button.rt-lead-chip:not(.clickable-icon) {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: auto;
+  padding: 3px 8px 3px 9px;
+  border-radius: 999px;
+  font-size: var(--font-ui-smaller);
+  background-color: color-mix(in srgb, var(--interactive-accent) 16%, transparent);
+  border: 1px solid var(--interactive-accent);
+  color: var(--text-normal);
+  box-shadow: none;
+}
+
+.rt-modal button.rt-lead-chip:not(.clickable-icon):hover {
+  background-color: color-mix(in srgb, var(--text-error, #e5484d) 18%, transparent);
+  border-color: var(--text-error, #e5484d);
+}
+
+.rt-lead-chip-icon,
+.rt-lead-chip-x { display: inline-flex; }
+.rt-lead-chip-icon svg,
+.rt-lead-chip-x svg { width: 12px; height: 12px; }
+.rt-lead-chip-x { opacity: 0.6; }
+
+.rt-cal-item-lead { margin-left: 4px; margin-right: 0; }
+
+/* Lead-up toasts are a softer heads-up: dashed accent edge. */
+.rt-toast.rt-toast-lead { border-left-style: dashed; }
+
+/* =========================================================
+   Calendar: responsive sizing (sidebar, note embeds, columns)
+   The calendar sizes itself to its own width with container
+   queries, so it fits a narrow column or a phone screen.
+   ========================================================= */
+
+.rt-cal {
+  container-type: inline-size;
+  container-name: rtcal;
+  min-width: 0;
+}
+
+.rt-cal-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+}
+
+.rt-cal-agenda-head { flex-wrap: wrap; row-gap: 2px; }
+.rt-cal-agenda-head > span { white-space: nowrap; }
+
+.rt-cal-wd-short,
+.rt-cal-title-short { display: none; }
+
+.rt-cal-header { min-width: 0; }
+.rt-cal-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.rt-cal-nav { min-width: 0; }
+
+.rt-cal button.rt-cal-title:not(.clickable-icon) {
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+}
+.rt-cal button.rt-cal-title:not(.clickable-icon):hover { background-color: var(--background-modifier-hover); }
+
+.rt-cal-day:focus-visible,
+.rt-cal-item:focus-visible { outline: 2px solid var(--interactive-accent); outline-offset: 1px; }
+
+.rt-cal-filter {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: -2px 0 8px;
+}
+.rt-cal-filter-icon { display: flex; color: var(--text-muted); }
+.rt-cal-filter-icon svg { width: 12px; height: 12px; }
+
+/* Day menu button on each agenda row: on hover with a mouse, always on touch. */
+.rt-cal-item { align-items: flex-start; }
+.rt-cal-item-more {
+  padding: 2px;
+  margin: -2px -4px -2px 0;
+  opacity: 0;
+  transition: opacity 120ms;
+}
+.rt-cal-item:hover .rt-cal-item-more,
+.rt-cal-item:focus-within .rt-cal-item-more { opacity: 1; }
+
+/* Narrow: small sidebar, a column in a note, a phone in portrait */
+@container rtcal (max-width: 290px) {
+  .rt-cal-wd-long { display: none; }
+  .rt-cal-wd-short { display: inline; }
+  .rt-cal-title-long { display: none; }
+  .rt-cal-title-short { display: inline; }
+  .rt-cal-title { font-size: var(--font-ui-small); padding: 2px 4px; }
+  .rt-cal-day { min-height: 36px; padding: 2px 0; gap: 2px; }
+  .rt-cal-num { width: 22px; height: 22px; font-size: var(--font-ui-smaller); }
+  .rt-cal-dot { width: 5px; height: 5px; }
+  .rt-cal-item { flex-direction: column; gap: 2px; position: relative; padding-right: 26px; }
+  .rt-cal-item-time { min-width: 0; }
+  .rt-cal-item-more { position: absolute; top: 6px; right: 6px; margin: 0; }
+}
+
+/* Very narrow: a column in a 3 or 4 column layout */
+@container rtcal (max-width: 210px) {
+  .rt-cal-header { gap: 2px; }
+  .rt-cal-actions { width: 100%; justify-content: space-between; }
+  .rt-cal-grid { gap: 1px; }
+  .rt-cal-day { min-height: 30px; }
+  .rt-cal-num { width: 20px; height: 20px; }
+  .rt-cal-dots { gap: 1px; }
+  .rt-cal-dot { width: 4px; height: 4px; }
+  .rt-cal-more { display: none; }
+  .rt-cal-day.is-today { box-shadow: none; }
+  .rt-cal-item-tags { display: none; }
+}
+
+/* Wide: a full-width note. Day list moves beside the month. */
+@container rtcal (min-width: 600px) {
+  .rt-cal-body { grid-template-columns: minmax(0, 1.7fr) minmax(220px, 1fr); gap: 0 20px; }
+  .rt-cal-header,
+  .rt-cal-filter { grid-column: 1 / -1; }
+  .rt-cal-grid { grid-column: 1; }
+  .rt-cal-agenda {
+    grid-column: 2;
+    margin-top: 0;
+    border-top: none;
+    border-left: 1px solid var(--background-modifier-border);
+    padding: 0 0 0 16px;
+  }
+  .rt-cal-day { min-height: 60px; }
+  .rt-cal-num { width: 28px; height: 28px; font-size: var(--font-ui-medium); }
+  .rt-cal-dot { width: 7px; height: 7px; }
+}
+
+/* ---------- Embedded in a note ---------- */
+
+.rt-cal-embed { margin: 4px 0; }
+
+.rt-cal.rt-cal-embedded {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m, 8px);
+  padding: 10px;
+  background: var(--background-primary);
+  font-size: var(--font-ui-small);
+  line-height: 1.4;
+  user-select: none;
+}
+
+/* Undo note typography that leaks into the embed. */
+.rt-cal-embedded p,
+.rt-cal-embedded div { margin-block: 0; }
+
+.rt-cal-embed-errors {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-error, #e5484d);
+  margin-bottom: 6px;
+}
+
+/* Inside callouts (callout-based column layouts), drop the double frame. */
+.callout .rt-cal.rt-cal-embedded { background: transparent; padding: 6px; }
+
+/* =========================================================
+   Touch screens and phones
+   ========================================================= */
+
+@media (hover: none) {
+  .rt-cal-item-more,
+  .rt-item-actions { opacity: 1; }
+  .rt-cal-day:hover { background: none; }
+  .rt-cal-day.is-selected { background: var(--background-modifier-active-hover, var(--background-modifier-hover)); }
+}
+
+.is-mobile .rt-cal-icon-btn,
+.is-mobile .rt-item-actions .clickable-icon { min-width: 36px; min-height: 36px; justify-content: center; }
+.is-mobile .rt-cal-item-more { opacity: 1; min-width: 32px; min-height: 32px; justify-content: center; }
+.is-mobile .rt-cal-day { -webkit-tap-highlight-color: transparent; }
+.is-mobile .rt-cal-item { padding: 8px 10px; }
+.is-mobile .rt-check { width: 20px; height: 20px; }
+
+/* Toasts on phones: full width, clear of the status bar, header and bottom toolbar. */
+body.is-phone .rt-toast-container {
+  left: 10px;
+  right: 10px;
+  width: auto;
+  transform: none;
+}
+body.is-phone .rt-toast-container.rt-pos-top-left,
+body.is-phone .rt-toast-container.rt-pos-top-center,
+body.is-phone .rt-toast-container.rt-pos-top-right { top: calc(env(safe-area-inset-top, 0px) + 52px); }
+body.is-phone .rt-toast-container.rt-pos-bottom-left,
+body.is-phone .rt-toast-container.rt-pos-bottom-center,
+body.is-phone .rt-toast-container.rt-pos-bottom-right { bottom: calc(env(safe-area-inset-bottom, 0px) + 72px); }
+body.is-tablet .rt-toast-container.rt-pos-top-left,
+body.is-tablet .rt-toast-container.rt-pos-top-center,
+body.is-tablet .rt-toast-container.rt-pos-top-right { top: calc(env(safe-area-inset-top, 0px) + 52px); }
+
+.is-mobile .rt-toast-actions button { min-height: 36px; padding: 6px 14px; font-size: var(--font-ui-small); }
+.is-mobile .rt-toast-close { min-width: 32px; min-height: 32px; justify-content: center; }
+
+/* Reminder dialog on phones: controls go under their labels and use the full width. */
+.is-phone .rt-modal .setting-item { flex-wrap: wrap; }
+.is-phone .rt-modal .setting-item-info { flex: 1 1 100%; margin-right: 0; }
+.is-phone .rt-modal .setting-item-control {
+  flex: 1 1 100%;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+.is-phone .rt-modal .rt-wide-input { min-width: 0; width: 100%; }
+.is-phone .rt-modal .rt-date-input,
+.is-phone .rt-modal .rt-time-input { margin-left: 0; flex: 1 1 140px; min-height: 36px; }
+.is-mobile .rt-modal button.rt-swatch:not(.clickable-icon),
+.is-mobile .rt-modal input.rt-swatch-custom { width: 30px; height: 30px; min-width: 30px; }
+.is-mobile .rt-modal .rt-chip,
+.is-mobile .rt-modal button.rt-lead-chip:not(.clickable-icon),
+.is-mobile .rt-modal button.rt-tag-chip:not(.clickable-icon) { min-height: 32px; padding: 5px 12px; }
+.is-mobile .rt-modal .rt-weekday { width: 38px; height: 36px; }
+
+/* =========================================================
+   Background images
+   ========================================================= */
+
+.rt-has-bg {
+  --rt-bg-scrim: color-mix(in srgb, var(--background-primary) var(--rt-bg-dim, 50%), transparent);
+  background-color: var(--background-primary);
+  background-image: linear-gradient(var(--rt-bg-scrim), var(--rt-bg-scrim)), var(--rt-bg-url, none);
+  background-size: 100% 100%, var(--rt-bg-size, cover);
+  background-repeat: no-repeat, var(--rt-bg-repeat, no-repeat);
+  background-position: center, var(--rt-bg-position, center);
+}
+
+/* Sidebar: the image fills the whole pane and stays put while the pane scrolls. */
+.rt-cal-pane.rt-has-bg { background-attachment: scroll; }
+
+/* Keep text readable on top of a picture. */
+.rt-has-bg .rt-cal-num,
+.rt-has-bg .rt-cal-weekday,
+.rt-has-bg .rt-cal-title,
+.rt-has-bg .rt-cal-agenda-head,
+.rt-has-bg .rt-cal-empty {
+  text-shadow: 0 0 3px var(--background-primary), 0 0 6px var(--background-primary);
+}
+.rt-has-bg .rt-cal-day.is-today .rt-cal-num { text-shadow: none; }
+
+.rt-has-bg .rt-cal-item {
+  background: color-mix(in srgb, var(--rt-item) 12%, color-mix(in srgb, var(--background-primary) 72%, transparent));
+}
+.rt-has-bg .rt-cal-item:hover {
+  background: color-mix(in srgb, var(--rt-item) 20%, color-mix(in srgb, var(--background-primary) 78%, transparent));
+}
+.rt-has-bg .rt-cal-day.is-selected { background: color-mix(in srgb, var(--interactive-accent) 22%, transparent); }
+.rt-has-bg .rt-cal-agenda { border-color: color-mix(in srgb, var(--text-normal) 18%, transparent); }
+
+/* A callout's own tint is replaced by the image inside column layouts. */
+.callout .rt-cal.rt-cal-embedded.rt-has-bg { padding: 10px; }
+
+/* ---------- Settings ---------- */
+
+.rt-bg-settings {
+  margin: 10px 0 18px;
+  padding: 10px 14px 4px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m, 8px);
+}
+
+.rt-bg-settings-title { font-weight: var(--font-semibold, 600); margin-bottom: 8px; }
+
+.rt-bg-preview {
+  height: 96px;
+  border-radius: var(--radius-s, 6px);
+  border: 1px solid var(--background-modifier-border);
+  background-color: var(--background-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.rt-bg-preview.is-empty { border-style: dashed; }
+.rt-bg-preview.is-missing .rt-bg-preview-text { color: var(--text-error, #e5484d); }
+
+.rt-bg-preview-text {
+  font-size: var(--font-ui-small);
+  color: var(--text-normal);
+  text-shadow: 0 0 3px var(--background-primary), 0 0 6px var(--background-primary);
+}
+
+.rt-bg-preview.is-empty .rt-bg-preview-text { color: var(--text-faint); text-shadow: none; }
+
+.rt-image-suggestion { display: flex; align-items: center; gap: 8px; }
+.rt-image-suggestion-thumb {
+  width: 36px;
+  height: 24px;
+  object-fit: cover;
+  border-radius: 3px;
+  flex: none;
+  background: var(--background-modifier-hover);
+}
+
+
+/* ---------- Pop-out toast window ----------
+   A pop-out window that holds only a toast: hide the tab row, toolbar and view
+   header, and let the toast fill the window. */
+
+body.rt-popup-window .workspace-tab-header-container,
+body.rt-popup-window .titlebar,
+body.rt-popup-window .status-bar,
+body.rt-popup-window .rt-popup-content {
+  display: none;
+}
+
+body.rt-popup-window .workspace-leaf-content > .view-header { display: none; }
+
+body.rt-popup-window .rt-toast-container {
+  top: 8px;
+  left: 8px;
+  width: calc(100vw - 16px);
+}
