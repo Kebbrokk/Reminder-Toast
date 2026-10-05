@@ -89,6 +89,7 @@ export class ReminderSettingTab extends PluginSettingTab {
 
   constructor(app: App, private plugin: ReminderToastPlugin) {
     super(app, plugin);
+    this.containerEl?.addClass?.("rt-settings");
   }
 
   // ---------- Reading and saving ----------
@@ -167,6 +168,7 @@ export class ReminderSettingTab extends PluginSettingTab {
       {
         type: "group",
         heading: "Toast appearance",
+        cls: "rt-settings-group",
         items: [
           {
             name: "Flash",
@@ -211,6 +213,7 @@ export class ReminderSettingTab extends PluginSettingTab {
       {
         type: "group",
         heading: "Alerts",
+        cls: "rt-settings-group",
         items: [
           { name: "Play sound", control: { type: "toggle", key: "playSound" } },
           {
@@ -233,6 +236,7 @@ export class ReminderSettingTab extends PluginSettingTab {
       {
         type: "group",
         heading: "Pop-out windows and toasts",
+        cls: "rt-settings-group",
         items: [
           {
             name: "Pop-out calendar",
@@ -275,6 +279,7 @@ export class ReminderSettingTab extends PluginSettingTab {
       {
         type: "group",
         heading: "Reminders file",
+        cls: "rt-settings-group",
         items: [
           {
             name: "Save reminders to a file",
@@ -308,6 +313,7 @@ export class ReminderSettingTab extends PluginSettingTab {
       {
         type: "group",
         heading: "Inline reminders",
+        cls: "rt-settings-group",
         items: [
           {
             name: "Detect inline reminders",
@@ -337,6 +343,7 @@ export class ReminderSettingTab extends PluginSettingTab {
       {
         type: "group",
         heading: "Calendar",
+        cls: "rt-settings-group",
         items: [
           {
             name: "Open calendar",
@@ -399,6 +406,7 @@ export class ReminderSettingTab extends PluginSettingTab {
       {
         type: "group",
         heading: "Test",
+        cls: "rt-settings-group",
         items: [
           {
             name: "Show a test toast",

@@ -802,7 +802,8 @@
   border: 1px solid var(--background-modifier-border);
   border-radius: var(--radius-m, 8px);
   padding: 10px;
-  background: var(--background-primary);
+  /* background-color, not the shorthand: the shorthand would wipe out a background image. */
+  background-color: var(--background-primary);
   font-size: var(--font-ui-small);
   line-height: 1.4;
   user-select: none;
@@ -819,7 +820,7 @@
 }
 
 /* Inside callouts (callout-based column layouts), drop the double frame. */
-.callout .rt-cal.rt-cal-embedded { background: transparent; padding: 6px; }
+.callout .rt-cal.rt-cal-embedded { background-color: transparent; padding: 6px; }
 
 /* =========================================================
    Touch screens and phones
@@ -927,6 +928,24 @@ body.is-tablet .rt-toast-container.rt-pos-top-right { top: calc(env(safe-area-in
 }
 
 .rt-bg-settings-title { font-weight: var(--font-semibold, 600); margin-bottom: 8px; }
+
+/*
+ * Row names follow the theme's text color. Action rows (test toasts, open calendar, copy code) can
+ * render with the browser's default dark button color, so name them explicitly. This does not rely
+ * on classes Obsidian may not put on the plugin's own rows.
+ */
+.vertical-tab-content .setting-item-name,
+.vertical-tab-content .setting-item.mod-clickable .setting-item-name,
+.vertical-tab-content .setting-item .clickable,
+.vertical-tab-content .setting-item-heading,
+.rt-bg-settings-title {
+  color: var(--text-normal) !important;
+}
+
+/* Buttons inside setting rows that carry no accent or warning styling inherit the theme color too. */
+.vertical-tab-content .setting-item button:not(.mod-cta):not(.mod-warning):not(.mod-destructive) {
+  color: var(--text-normal);
+}
 
 .rt-bg-preview {
   height: 96px;
