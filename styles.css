@@ -934,16 +934,16 @@ body.is-tablet .rt-toast-container.rt-pos-top-right { top: calc(env(safe-area-in
  * render with the browser's default dark button color, so name them explicitly. This does not rely
  * on classes Obsidian may not put on the plugin's own rows.
  */
-.vertical-tab-content .setting-item-name,
-.vertical-tab-content .setting-item.mod-clickable .setting-item-name,
-.vertical-tab-content .setting-item .clickable,
-.vertical-tab-content .setting-item-heading,
-.rt-bg-settings-title {
-  color: var(--text-normal) !important;
+body:is(.theme-dark, .theme-light) .vertical-tab-content .setting-item .setting-item-name,
+body:is(.theme-dark, .theme-light) .vertical-tab-content .setting-item.mod-clickable .setting-item-name,
+body:is(.theme-dark, .theme-light) .vertical-tab-content .setting-item .clickable,
+body:is(.theme-dark, .theme-light) .vertical-tab-content .setting-item.setting-item-heading .setting-item-name,
+body:is(.theme-dark, .theme-light) .rt-bg-settings .rt-bg-settings-title {
+  color: var(--text-normal);
 }
 
 /* Buttons inside setting rows that carry no accent or warning styling inherit the theme color too. */
-.vertical-tab-content .setting-item button:not(.mod-cta):not(.mod-warning):not(.mod-destructive) {
+body:is(.theme-dark, .theme-light) .vertical-tab-content .setting-item button:not(.mod-cta):not(.mod-warning):not(.mod-destructive) {
   color: var(--text-normal);
 }
 
