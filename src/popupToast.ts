@@ -103,6 +103,8 @@ export class ToastPopupManager {
           onAction(true);
         },
         onMeasured: (win, height) => {
+          // Never adopt the main window: a closed popout's `containerEl.win` falls back to it.
+          if (win === window || win.closed || !this.open.includes(popup)) return;
           popup.win = win;
           popup.height = height;
           this.restack(popup.area, popup.position);
@@ -153,6 +155,7 @@ export class ToastPopupManager {
     let offset = 0;
     for (const p of this.open) {
       if (p.area.key !== area.key || p.position !== position || !p.win) continue;
+      if (p.win === window || p.win.closed) continue;
       const { x, y } = this.originFor(area, position, offset, p.height);
       p.win.moveTo(x, y);
       // The window frame adds to the toast's own height.
@@ -194,6 +197,11 @@ export class ToastPopupView extends ItemView {
 
     const doc = this.containerEl.doc;
     const win = this.containerEl.win;
+    // Not in a real pop-out window: show nothing rather than touch the main window.
+    if (win === window) {
+      this.leaf.detach();
+      return;
+    }
     doc.body.addClass("rt-popup-window");
     this.contentEl.addClass("rt-popup-content");
 
@@ -207,6 +215,7 @@ export class ToastPopupView extends ItemView {
     });
 
     const measure = () => {
+      if (win.closed) return;
       const container = doc.body.querySelector<HTMLElement>(".rt-toast-container");
       if (!container) return;
       const height = Math.min(Math.ceil(container.getBoundingClientRect().height) + EDGE * 2, 600);
