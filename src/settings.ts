@@ -404,6 +404,19 @@ export class ReminderSettingTab extends PluginSettingTab {
       },
 
       {
+        type: "list",
+        heading: "Category colors",
+        emptyState: "No categories yet. Categories you type in a tracker are added here with a color.",
+        items: s.categories.map((cat, idx) => ({
+          name: `#${cat.name}`,
+          desc: "Trackers in this category use its color unless they have their own.",
+          render: (setting: Setting) => this.renderCategoryRow(setting, idx),
+        })),
+        onDelete: (index: number) => void this.removeCategory(index),
+        addItem: { name: "Add category", action: () => void this.addCategory() },
+      },
+
+      {
         type: "group",
         heading: "Test",
         cls: "rt-settings-group",
@@ -615,6 +628,60 @@ export class ReminderSettingTab extends PluginSettingTab {
 
   private async removeTag(index: number): Promise<void> {
     this.plugin.settings.tags.splice(index, 1);
+    await this.plugin.saveAll();
+    this.update();
+  }
+
+  // ---------- Categories ----------
+
+  private renderCategoryRow(setting: Setting, idx: number): void {
+    const s = this.plugin.settings;
+    const cat = s.categories[idx];
+    if (!cat) return;
+    const swatch = createSpan({ cls: "rt-tag-swatch" });
+    swatch.setCssProps({ "--rt-tag": cat.color });
+    setting.nameEl.prepend(swatch);
+
+    setting
+      .addText((t) => {
+        t.setValue(cat.name);
+        const rename = async () => {
+          const name = normalizeTag(t.getValue());
+          const taken = s.categories.some((x, i) => i !== idx && x.name.toLowerCase() === name.toLowerCase());
+          if (!name || name === cat.name || taken) {
+            t.setValue(cat.name);
+            return;
+          }
+          for (const tr of this.plugin.trackers) {
+            if (!tr.categories) continue;
+            tr.categories = tr.categories.map((x) => (x.toLowerCase() === cat.name.toLowerCase() ? name : x));
+          }
+          cat.name = name;
+          await this.plugin.saveAll();
+          this.update();
+        };
+        t.inputEl.addEventListener("blur", () => void rename());
+      })
+      .addColorPicker((c) =>
+        c.setValue(cat.color || PALETTE[idx % PALETTE.length][1]).onChange(async (v) => {
+          cat.color = v;
+          swatch.setCssProps({ "--rt-tag": v });
+          await this.plugin.saveAll();
+        })
+      );
+  }
+
+  private async addCategory(): Promise<void> {
+    const s = this.plugin.settings;
+    let name = "new-category";
+    for (let n = 2; s.categories.some((c) => c.name.toLowerCase() === name); n++) name = `new-category-${n}`;
+    s.categories.push({ name, color: PALETTE[s.categories.length % PALETTE.length][1] });
+    await this.plugin.saveAll();
+    this.update();
+  }
+
+  private async removeCategory(index: number): Promise<void> {
+    this.plugin.settings.categories.splice(index, 1);
     await this.plugin.saveAll();
     this.update();
   }

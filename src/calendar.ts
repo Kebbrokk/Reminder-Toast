@@ -18,7 +18,7 @@ import { describeRepeat } from "./repeat";
 import { normalizeLeads, shortLead } from "./leads";
 import { onContextOrLongPress } from "./touch";
 import { BG_FITS, BG_POSITIONS, ImagePickerModal, applyBackground, resolveImage } from "./background";
-import type { BackgroundSettings, BgFit } from "./types";
+import type { BackgroundSettings, BgFit, Tracker } from "./types";
 
 export const VIEW_TYPE_CALENDAR = "reminder-toast-calendar";
 export const CALENDAR_CODE_BLOCK = "reminder-calendar";
@@ -140,6 +140,14 @@ export class CalendarRenderer {
       byDay.set(key, list);
     }
 
+    const trackersByDay = new Map<string, Tracker[]>();
+    for (const t of this.trackers(gridStart.valueOf(), gridEnd.valueOf())) {
+      const key = moment(t.date).format("YYYY-MM-DD");
+      const list = trackersByDay.get(key) ?? [];
+      list.push(t);
+      trackersByDay.set(key, list);
+    }
+
     const grid = body.createDiv({ cls: "rt-cal-grid" });
     for (let i = 0; i < 7; i++) {
       const wd = moment().day((weekStart + i) % 7);
@@ -151,10 +159,17 @@ export class CalendarRenderer {
     for (let i = 0; i < weeks * 7; i++) {
       const day = gridStart.clone().add(i, "days");
       const key = day.format("YYYY-MM-DD");
-      this.renderDay(grid, day, key, byDay.get(key) ?? []);
+      this.renderDay(grid, day, key, byDay.get(key) ?? [], trackersByDay.get(key) ?? []);
     }
 
-    if (this.opts.agenda) this.renderAgenda(body, byDay.get(this.selected) ?? this.itemsForDay(this.selected));
+    if (this.opts.agenda) {
+      const day = moment(this.selected, "YYYY-MM-DD");
+      this.renderAgenda(
+        body,
+        byDay.get(this.selected) ?? this.itemsForDay(this.selected),
+        trackersByDay.get(this.selected) ?? this.trackers(day.clone().startOf("day").valueOf(), day.clone().endOf("day").valueOf())
+      );
+    }
   }
 
   /** True when this calendar is in a popped-out window. */
@@ -215,6 +230,14 @@ export class CalendarRenderer {
     return all.filter((i) => (i.reminder.tags ?? []).some((t) => want.has(t.toLowerCase())));
   }
 
+  /** Trackers in range. A tag filter on the calendar also filters trackers by category. */
+  private trackers(from: number, to: number): Tracker[] {
+    const all = this.plugin.trackersInRange(from, to);
+    if (!this.opts.tags.length) return all;
+    const want = new Set(this.opts.tags.map((t) => t.toLowerCase()));
+    return all.filter((t) => (t.categories ?? []).some((c) => want.has(c.toLowerCase())));
+  }
+
   private itemsForDay(key: string): CalendarItem[] {
     const day = moment(key, "YYYY-MM-DD");
     return this.items(day.clone().startOf("day").valueOf(), day.clone().endOf("day").valueOf());
@@ -270,7 +293,7 @@ export class CalendarRenderer {
 
   // ---------- Days ----------
 
-  private renderDay(grid: HTMLElement, day: Moment, key: string, items: CalendarItem[]): void {
+  private renderDay(grid: HTMLElement, day: Moment, key: string, items: CalendarItem[], trackers: Tracker[]): void {
     const cell = grid.createDiv({ cls: "rt-cal-day", attr: { role: "button", tabindex: "0" } });
     if (!day.isSame(this.month, "month")) cell.addClass("is-other-month");
     if (key === this.todayKey) cell.addClass("is-today");
@@ -280,19 +303,31 @@ export class CalendarRenderer {
 
     cell.setAttr(
       "aria-label",
-      `${day.format("dddd, MMMM D")}: ${items.length || "no"} reminder${items.length === 1 ? "" : "s"}`
+      `${day.format("dddd, MMMM D")}: ${items.length || "no"} reminder${items.length === 1 ? "" : "s"}` +
+        (trackers.length ? `, ${trackers.length} tracker${trackers.length === 1 ? "" : "s"}` : "")
     );
     cell.createDiv({ cls: "rt-cal-num", text: String(day.date()) });
 
-    if (items.length) {
+    const total = items.length + trackers.length;
+    if (total) {
       const dots = cell.createDiv({ cls: "rt-cal-dots" });
-      for (const item of items.slice(0, MAX_DOTS)) {
+      let shown = 0;
+      for (const item of items) {
+        if (shown >= MAX_DOTS) break;
         const dot = dots.createSpan({ cls: "rt-cal-dot" });
         const color = this.plugin.colorOf(item.reminder);
         if (color) dot.style.setProperty("--rt-dot", color);
         if (item.reminder.completed) dot.addClass("is-completed");
+        shown++;
       }
-      if (items.length > MAX_DOTS) dots.createSpan({ cls: "rt-cal-more", text: `+${items.length - MAX_DOTS}` });
+      for (const t of trackers) {
+        if (shown >= MAX_DOTS) break;
+        const dot = dots.createSpan({ cls: "rt-cal-dot is-tracker" });
+        const color = this.plugin.trackerColorOf(t);
+        if (color) dot.style.setProperty("--rt-dot", color);
+        shown++;
+      }
+      if (total > MAX_DOTS) dots.createSpan({ cls: "rt-cal-more", text: `+${total - MAX_DOTS}` });
     }
 
     // Tap selects; a second tap on the same day adds a reminder (works for mouse and touch).
@@ -318,11 +353,11 @@ export class CalendarRenderer {
     onContextOrLongPress(cell, (at) => {
       this.selected = key;
       this.render();
-      this.dayMenu(day, items).showAtPosition(at);
+      this.dayMenu(day, items, trackers).showAtPosition(at);
     });
   }
 
-  private dayMenu(day: Moment, items: CalendarItem[]): Menu {
+  private dayMenu(day: Moment, items: CalendarItem[], trackers: Tracker[]): Menu {
     const menu = new Menu();
     menu.addItem((i) =>
       i
@@ -336,6 +371,23 @@ export class CalendarRenderer {
         .setIcon("repeat")
         .onClick(() => this.addOn(day, true))
     );
+    menu.addItem((i) =>
+      i
+        .setTitle(`Add tracker on ${day.format("MMM D")}`)
+        .setIcon("calendar-check")
+        .onClick(() => this.addTrackerOn(day))
+    );
+    if (trackers.length) {
+      menu.addSeparator();
+      for (const t of trackers.slice(0, 8)) {
+        menu.addItem((i) =>
+          i
+            .setTitle(t.title)
+            .setIcon("calendar-check")
+            .onClick(() => this.editTracker(t))
+        );
+      }
+    }
     if (items.length) {
       menu.addSeparator();
       for (const item of items.slice(0, 8)) {
@@ -382,20 +434,22 @@ export class CalendarRenderer {
 
   // ---------- Agenda ----------
 
-  private renderAgenda(root: HTMLElement, items: CalendarItem[]): void {
+  private renderAgenda(root: HTMLElement, items: CalendarItem[], trackers: Tracker[]): void {
     const day = moment(this.selected, "YYYY-MM-DD");
     const agenda = root.createDiv({ cls: "rt-cal-agenda" });
     const head = agenda.createDiv({ cls: "rt-cal-agenda-head" });
     head.createSpan({ text: day.format("ddd, MMM D") });
     if (this.selected === this.todayKey) head.createSpan({ cls: "rt-cal-today-badge", text: "Today" });
 
-    if (!items.length) {
+    if (!items.length && !trackers.length) {
       agenda.createDiv({
         cls: "rt-cal-empty",
-        text: "No reminders. Press +, double tap a day, or right click (long press on touch) to add one.",
+        text: "Nothing here. Press +, double tap a day, or right click (long press on touch) to add a reminder or tracker.",
       });
       return;
     }
+
+    for (const t of trackers) this.renderTrackerRow(agenda, t);
 
     for (const item of items) {
       const r = item.reminder;
@@ -439,6 +493,66 @@ export class CalendarRenderer {
       });
       onContextOrLongPress(row, (at) => this.itemMenu(item).showAtPosition(at));
     }
+  }
+
+  private renderTrackerRow(agenda: HTMLElement, t: Tracker): void {
+    const row = agenda.createDiv({ cls: "rt-cal-item is-tracker", attr: { role: "button", tabindex: "0" } });
+    const color = this.plugin.trackerColorOf(t);
+    if (color) row.style.setProperty("--rt-item", color);
+
+    const icon = row.createDiv({ cls: "rt-cal-item-time" });
+    setIcon(icon, "calendar-check");
+    const main = row.createDiv({ cls: "rt-cal-item-main" });
+    main.createDiv({ cls: "rt-cal-item-title", text: t.title || "Untitled tracker" });
+    if (t.categories?.length) {
+      const cats = main.createDiv({ cls: "rt-cal-item-tags" });
+      for (const c of t.categories) cats.createSpan({ cls: "rt-cal-tag", text: `#${c}` });
+    }
+
+    const more = row.createEl("button", { cls: "clickable-icon rt-cal-item-more", attr: { "aria-label": "More" } });
+    setIcon(more, "more-vertical");
+    more.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this.trackerMenu(t).showAtMouseEvent(e);
+    });
+    row.addEventListener("click", () => this.editTracker(t));
+    row.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") this.editTracker(t);
+    });
+    onContextOrLongPress(row, (at) => this.trackerMenu(t).showAtPosition(at));
+  }
+
+  private trackerMenu(t: Tracker): Menu {
+    const menu = new Menu();
+    menu.addItem((i) =>
+      i
+        .setTitle("Edit")
+        .setIcon("pencil")
+        .onClick(() => this.editTracker(t))
+    );
+    menu.addItem((i) =>
+      i
+        .setTitle("Create similar")
+        .setIcon("copy")
+        .onClick(() => this.plugin.openTrackerModal(this.plugin.similarTracker(t)))
+    );
+    menu.addSeparator();
+    menu.addItem((i) =>
+      i
+        .setTitle("Delete")
+        .setIcon("trash-2")
+        .setWarning(true)
+        .onClick(() => new ConfirmModal(this.plugin.app, `Delete "${t.title}"?`, () => this.plugin.deleteTracker(t.id)).open())
+    );
+    return menu;
+  }
+
+  private addTrackerOn(day: Moment): void {
+    this.plugin.openTrackerModal({ date: day.clone().startOf("day").valueOf(), categories: [...this.opts.tags] });
+  }
+
+  private editTracker(t: Tracker): void {
+    this.plugin.openTrackerModal({}, t);
   }
 
   private itemMenu(item: CalendarItem): Menu {

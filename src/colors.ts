@@ -1,4 +1,4 @@
-import type { Reminder, ReminderSettings } from "./types";
+import type { Reminder, ReminderSettings, Tracker } from "./types";
 
 /** Preset swatches offered in the reminder dialog and for new tags. */
 export const PALETTE: Array<[string, string]> = [
@@ -44,6 +44,16 @@ export function reminderColor(r: Reminder, settings: ReminderSettings, allowAuto
   }
   if (allowAuto && settings.autoColor) return autoColor(r.title);
   return "";
+}
+
+/** Tracker color: its own, its first colored category, then an automatic color from its title. */
+export function trackerColor(t: Tracker, settings: ReminderSettings): string {
+  if (t.color) return t.color;
+  for (const cat of t.categories ?? []) {
+    const c = settings.categories.find((x) => x.name.toLowerCase() === cat.toLowerCase())?.color;
+    if (c) return c;
+  }
+  return settings.autoColor ? autoColor(t.title) : "";
 }
 
 export function autoColor(seed: string): string {

@@ -499,6 +499,7 @@
   background: var(--rt-dot);
 }
 
+.rt-cal-dot.is-tracker { border-radius: 1px; transform: rotate(45deg) scale(0.85); }
 .rt-cal-dot.is-completed { background: transparent; box-shadow: inset 0 0 0 1px var(--rt-dot); }
 
 .rt-cal-more { font-size: 9px; color: var(--text-faint); line-height: 1; }
@@ -998,3 +999,6 @@ body.rt-popup-window .rt-toast-container {
   left: 8px;
   width: calc(100vw - 16px);
 }
+
+/* Trackers: dated log entries that never notify */
+.rt-cal-item.is-tracker .rt-cal-item-time { display: flex; align-items: center; color: var(--rt-item, var(--text-muted)); }
