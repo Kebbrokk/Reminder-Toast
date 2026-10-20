@@ -4,6 +4,14 @@ Create reminders with dates, times and repeats, and get a flashing toast notific
 
 Reminder Toast works in the Obsidian desktop app on Windows, macOS and Linux, version 1.13.0 or newer.
 
+## Installing by hand
+
+Do not use **Download ZIP** or the source code archive on GitHub. It has no `main.js`, because the plugin is built from the source, so Obsidian keeps running your old version.
+
+1. Open the [latest release](../../releases/latest) and download `main.js`, `manifest.json` and `styles.css`.
+2. Put them in `<your vault>/.obsidian/plugins/reminder-toast/`, replacing the old files.
+3. Reload Obsidian, or turn the plugin off and on in **Settings > Community plugins**.
+
 ## Features
 
 - Create reminders with a title, optional message, date, time, and optional linked note
