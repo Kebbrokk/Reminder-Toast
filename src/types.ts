@@ -36,6 +36,20 @@ export interface Reminder {
   leadBase?: number;
 }
 
+/** A dated log entry such as "TV Show Started". Never notifies. */
+export interface Tracker {
+  id: string;
+  title: string;
+  /** Start of the day as epoch milliseconds. */
+  date: number;
+  /** Category names without the leading #. */
+  categories?: string[];
+  /** Hex color. Empty means use the first category's color, then an automatic color. */
+  color?: string;
+  note?: string;
+  createdAt: number;
+}
+
 export type BgFit = "cover" | "contain" | "tile" | "stretch";
 
 export interface BackgroundSettings {
@@ -93,6 +107,8 @@ export interface ReminderSettings {
   fileIncludeCompleted: boolean;
   /** Tags with colors. Reminders with a tag use its color unless they have their own. */
   tags: TagDef[];
+  /** Tracker categories with colors. */
+  categories: TagDef[];
   /** Give reminders without a color or colored tag an automatic color on the calendar and list. */
   autoColor: boolean;
   /** 0 = Sunday, 1 = Monday. */
@@ -139,6 +155,7 @@ export const DEFAULT_SETTINGS: ReminderSettings = {
   reminderFilePath: "Reminders.md",
   fileIncludeCompleted: true,
   tags: [],
+  categories: [],
   autoColor: true,
   weekStart: 0,
   defaultTime: "09:00",
@@ -154,6 +171,7 @@ export const DEFAULT_SETTINGS: ReminderSettings = {
 export interface PluginData {
   settings: ReminderSettings;
   reminders: Reminder[];
+  trackers?: Tracker[];
   /** Lines in the reminders file that are not reminders yet. */
   fileDrafts?: string[];
 }
@@ -182,4 +200,17 @@ export function newReminder(partial: Partial<Reminder> = {}): Reminder {
 export function defaultDue(): number {
   const step = 5 * 60 * 1000;
   return Math.ceil((Date.now() + 60 * 60 * 1000) / step) * step;
+}
+
+export function newTracker(partial: Partial<Tracker> = {}): Tracker {
+  return {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+    title: "",
+    date: new Date().setHours(0, 0, 0, 0),
+    categories: [],
+    color: "",
+    note: "",
+    createdAt: Date.now(),
+    ...partial,
+  };
 }

@@ -240,6 +240,15 @@ Accepted repeat text: `daily`, `weekdays`, `weekly`, `monthly`, `yearly`, `every
 - **Create similar:** in the list, the calendar, or a right click menu. It opens a new reminder with the same title, message, color, tags, repeat, linked note, and toast text, set for the next upcoming time.
 - Toast templates can use `{{tags}}` and `{{repeat}}`.
 
+## Trackers and categories
+
+Trackers are dated log entries such as "TV show started" or "Book finished". They never show a toast.
+
+- **Add one:** right click a day on the calendar (long press on touch) and choose **Add tracker**, or run the **Add tracker** command.
+- **Categories:** type categories in the dialog (comma separated), or click an existing one. Categories work like tags and have their own colors in **Settings > Reminder Toast > Category colors**.
+- **On the calendar:** trackers show as diamond markers next to the reminder dots, and as rows in the day's list. Click a row to edit it, or use its menu to create a similar tracker or delete it.
+- **Filters:** a calendar limited to tags (the `tags` option of the code block) also limits trackers to those categories.
+
 ## Desktop only
 
 Reminder Toast is a desktop-only plugin (`isDesktopOnly` is `true` in its manifest). Pop-out windows, which the pop-out calendar and pop-out toasts use, are available only in the Obsidian desktop app.

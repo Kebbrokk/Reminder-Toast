@@ -12,8 +12,9 @@ import {
   normalizePath,
   setIcon,
 } from "obsidian";
-import { DEFAULT_BACKGROUND, DEFAULT_SETTINGS, PluginData, Reminder, ReminderSettings, newReminder } from "./src/types";
+import { DEFAULT_BACKGROUND, DEFAULT_SETTINGS, PluginData, Reminder, ReminderSettings, Tracker, newReminder, newTracker } from "./src/types";
 import { ReminderModal } from "./src/modal";
+import { TrackerModal } from "./src/trackerModal";
 import { ReminderListView, VIEW_TYPE_REMINDERS } from "./src/view";
 import { ReminderSettingTab } from "./src/settings";
 import { ToastManager, ToastOptions, playChime, showSystemNotification } from "./src/toast";
@@ -22,7 +23,7 @@ import { formatDue, leadToastContent, toastContent } from "./src/template";
 import { formatLeadText, normalizeLeads, parseLeadText, sameLeads } from "./src/leads";
 import { LineChanges, buildInlineLine, parseInline, rewriteInlineLine } from "./src/inline";
 import { RepeatRule, formatRepeat, isOccurrence, nextAfter, occurrencesBetween, parseRepeat, sameRule } from "./src/repeat";
-import { autoColor, reminderColor } from "./src/colors";
+import { autoColor, reminderColor, trackerColor } from "./src/colors";
 import {
   CALENDAR_CODE_BLOCK,
   CalendarRenderer,
@@ -68,6 +69,7 @@ export interface CalendarItem {
 export default class ReminderToastPlugin extends Plugin {
   settings: ReminderSettings = { ...DEFAULT_SETTINGS };
   reminders: Reminder[] = [];
+  trackers: Tracker[] = [];
   /** Every calendar on screen: the sidebar view and any embedded in notes. */
   calendars = new Set<CalendarRenderer>();
 
@@ -149,6 +151,12 @@ export default class ReminderToastPlugin extends Plugin {
           { editor, file: view.file }
         );
       },
+    });
+
+    this.addCommand({
+      id: "add-tracker",
+      name: "Add tracker",
+      callback: () => this.openTrackerModal(),
     });
 
     this.addCommand({
@@ -287,9 +295,13 @@ export default class ReminderToastPlugin extends Plugin {
     const missingIdSetting = !data.settings || !("showReminderIds" in data.settings);
     this.settings = { ...DEFAULT_SETTINGS, ...(data.settings ?? {}) };
     this.settings.tags = Array.isArray(this.settings.tags) ? this.settings.tags.map((t) => ({ ...t })) : [];
+    this.settings.categories = Array.isArray(this.settings.categories)
+      ? this.settings.categories.map((t) => ({ ...t }))
+      : [];
     this.settings.sidebarBackground = { ...DEFAULT_BACKGROUND, ...(data.settings?.sidebarBackground ?? {}) };
     this.settings.embedBackground = { ...DEFAULT_BACKGROUND, ...(data.settings?.embedBackground ?? {}) };
     this.reminders = Array.isArray(data.reminders) ? data.reminders : [];
+    this.trackers = Array.isArray(data.trackers) ? data.trackers : [];
     this.fileDrafts = Array.isArray(data.fileDrafts) ? data.fileDrafts : [];
     this.settings.showReminderIds = this.settings.showReminderIds === true;
     return missingIdSetting;
@@ -310,7 +322,7 @@ export default class ReminderToastPlugin extends Plugin {
   }
 
   private async persist(): Promise<void> {
-    const data: PluginData = { settings: this.settings, reminders: this.reminders, fileDrafts: this.fileDrafts };
+    const data: PluginData = { settings: this.settings, reminders: this.reminders, trackers: this.trackers, fileDrafts: this.fileDrafts };
     await this.saveData(data);
   }
 
@@ -387,6 +399,47 @@ export default class ReminderToastPlugin extends Plugin {
     r.inline = false;
     this.reminders.push(r);
     await this.saveAll();
+  }
+
+  // ---------- Trackers ----------
+
+  findTracker(id: string): Tracker | undefined {
+    return this.trackers.find((t) => t.id === id);
+  }
+
+  /** Categories used for the first time are added to settings with a color. */
+  private registerCategories(t: Tracker): void {
+    for (const cat of t.categories ?? []) {
+      if (this.settings.categories.some((c) => c.name.toLowerCase() === cat.toLowerCase())) continue;
+      this.settings.categories.push({ name: cat, color: t.color || autoColor(cat) });
+    }
+  }
+
+  /** Add a new tracker, or replace the one with the same id. */
+  async upsertTracker(t: Tracker): Promise<void> {
+    this.registerCategories(t);
+    const i = this.trackers.findIndex((x) => x.id === t.id);
+    if (i >= 0) this.trackers[i] = t;
+    else this.trackers.push(t);
+    await this.saveAll();
+  }
+
+  async deleteTracker(id: string): Promise<void> {
+    this.trackers = this.trackers.filter((t) => t.id !== id);
+    await this.saveAll();
+  }
+
+  /** Trackers dated between two times, oldest first. */
+  trackersInRange(from: number, to: number): Tracker[] {
+    return this.trackers.filter((t) => t.date >= from && t.date <= to).sort((a, b) => a.date - b.date || a.createdAt - b.createdAt);
+  }
+
+  openTrackerModal(prefill: Partial<Tracker> = {}, existing: Tracker | null = null): void {
+    new TrackerModal(this.app, this, existing, (t) => void this.upsertTracker(t), prefill).open();
+  }
+
+  trackerColorOf(t: Tracker): string {
+    return trackerColor(t, this.settings);
   }
 
   async deleteReminder(id: string): Promise<void> {
@@ -1618,6 +1671,11 @@ export default class ReminderToastPlugin extends Plugin {
       toastBody: r.toastBody,
       leadUps: [...(r.leadUps ?? [])],
     });
+  }
+
+  /** Same fields as the tracker, with a fresh id, for "Create similar". */
+  similarTracker(t: Tracker): Partial<Tracker> {
+    return newTracker({ title: t.title, date: t.date, categories: [...(t.categories ?? [])], color: t.color, note: t.note });
   }
 
   colorOf(r: Reminder): string {
