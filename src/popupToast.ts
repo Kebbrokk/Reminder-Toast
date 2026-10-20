@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf } from "obsidian";
+import { App, ItemView, WorkspaceLeaf } from "obsidian";
 import type ReminderToastPlugin from "../main";
 import type { ToastOptions } from "./toast";
 import type { ToastPosition } from "./types";
@@ -16,6 +16,7 @@ const WIDTH = 400;
 const GAP = 8;
 const EDGE = 12;
 const FIRST_GUESS_HEIGHT = 180;
+const RESOLVE_TIMEOUT_MS = 500;
 
 /** Work area of a screen. Chromium reports it through availLeft and availTop. */
 export interface ScreenArea {
@@ -33,6 +34,20 @@ export function screenAreaFor(win: Window): ScreenArea {
   const x = s.availLeft ?? 0;
   const y = s.availTop ?? 0;
   return { key: `${x},${y},${s.availWidth},${s.availHeight}`, x, y, width: s.availWidth, height: s.availHeight };
+}
+
+/**
+ * True when `win` is a pop-out window that only `leaf` lives in. A leaf that is
+ * still being attached can report the active window (the main window or a
+ * popped-out calendar) as its own, so this must hold before touching a window.
+ */
+function ownsWindow(app: App, win: Window, leaf: WorkspaceLeaf | null): boolean {
+  if (!leaf || win === window || win.closed) return false;
+  let shared = false;
+  app.workspace.iterateAllLeaves((other) => {
+    if (other !== leaf && other.view.containerEl.win === win) shared = true;
+  });
+  return !shared;
 }
 
 export interface PopupRequest {
@@ -104,7 +119,7 @@ export class ToastPopupManager {
         },
         onMeasured: (win, height) => {
           // Never adopt the main window: a closed popout's `containerEl.win` falls back to it.
-          if (win === window || win.closed || !this.open.includes(popup)) return;
+          if (!this.open.includes(popup) || !ownsWindow(this.plugin.app, win, popup.leaf)) return;
           popup.win = win;
           popup.height = height;
           this.restack(popup.area, popup.position);
@@ -155,7 +170,7 @@ export class ToastPopupManager {
     let offset = 0;
     for (const p of this.open) {
       if (p.area.key !== area.key || p.position !== position || !p.win) continue;
-      if (p.win === window || p.win.closed) continue;
+      if (!ownsWindow(this.plugin.app, p.win, p.leaf)) continue;
       const { x, y } = this.originFor(area, position, offset, p.height);
       p.win.moveTo(x, y);
       // The window frame adds to the toast's own height.
@@ -167,6 +182,9 @@ export class ToastPopupManager {
 
 /** The pop-out window's only view: a single toast card. */
 export class ToastPopupView extends ItemView {
+  /** The document this view styled, so only that one is restored on close. */
+  private doc: Document | null = null;
+
   constructor(
     leaf: WorkspaceLeaf,
     private plugin: ReminderToastPlugin,
@@ -195,13 +213,24 @@ export class ToastPopupView extends ItemView {
       return;
     }
 
-    const doc = this.containerEl.doc;
-    const win = this.containerEl.win;
-    // Not in a real pop-out window: show nothing rather than touch the main window.
-    if (win === window) {
-      this.leaf.detach();
-      return;
-    }
+    // Wait until this leaf is in its own window: while it is being attached it
+    // can still report the active window, such as a popped-out calendar.
+    const started = Date.now();
+    const attach = () => {
+      const win = this.containerEl.win;
+      if (!ownsWindow(this.plugin.app, win, this.leaf)) {
+        if (Date.now() - started > RESOLVE_TIMEOUT_MS) this.leaf.detach();
+        else window.setTimeout(attach, 25);
+        return;
+      }
+      this.setUp(request, win);
+    };
+    attach();
+  }
+
+  private setUp(request: PopupRequest, win: Window): void {
+    const doc = win.document;
+    this.doc = doc;
     doc.body.addClass("rt-popup-window");
     this.contentEl.addClass("rt-popup-content");
 
@@ -225,7 +254,7 @@ export class ToastPopupView extends ItemView {
   }
 
   async onClose(): Promise<void> {
-    this.containerEl.doc.body.removeClass("rt-popup-window");
+    this.doc?.body.removeClass("rt-popup-window");
     this.contentEl.empty();
   }
 }
